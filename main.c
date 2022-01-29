@@ -10,10 +10,20 @@ int main(int argc, char **argv)
     DIR *folder;
     struct dirent *entry;
     struct Node *first_file = NULL;
-    int port = strtol(argv[1], NULL, 10);
-    char *directory = argv[2];
+    int port;
+    char *directory;
+    if (argc < 2){
+        port = 445;
+        directory = (char *)".";
+    }
+    else{
+        port = strtol(argv[1], NULL, 10);
+        directory = argv[2];
+    }
 
+    printf("start\n");
     folder = opendir(directory);
+    // printf("opening folder\n");
     if(folder == NULL)
     {
         perror("Unable to read directory");
@@ -28,7 +38,7 @@ int main(int argc, char **argv)
     while ((entry = readdir(folder)) != NULL) {
     
         struct Node *last = (struct Node*) malloc(sizeof(struct Node));
-        full_path = malloc(strlen(directory) + strlen(entry->d_name));
+        full_path = (char *)malloc(strlen(directory) + strlen(entry->d_name));
         strcpy(full_path, directory);
         strcat(full_path, entry->d_name);
         last->directory = full_path;

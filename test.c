@@ -16,7 +16,7 @@ void launch(struct Server *server){
         printf("%s\n", buffer);
         write(new_socket, hello, strlen(hello));
         close(new_socket);
-        
+
     }
     
 }
