@@ -231,10 +231,10 @@ char* html_template(const char *path){
         else
             size =  -1;
         printf("<tr><td><a href=\"%s\">%s</a></td><td>%ld</td>\n", full_path, entry->d_name, size);
-        // free(full_path);
     }
     
 
+    free(full_path);
     closedir(folder);
     // printf("%s\n", path);
     printf("</tbody></table></body>\n");
@@ -254,18 +254,10 @@ void serve_resource(struct client_info *client, const char *path) {
     {
         if( s.st_mode & S_IFDIR )
         {
-            
+
             char* status = html_template(path);
             path = "index.html";
         }
-        else if( s.st_mode & S_IFREG )
-        {
-            // printf("Its a FILE!");
-            //it's a file
-        }
-        // else{
-        //     //its something else
-        // }
     }
 
     printf("serve_resource %s %s\n", get_client_address(client), path);
@@ -329,12 +321,13 @@ void serve_resource(struct client_info *client, const char *path) {
 int main(int argc, char** argv) {
 
     char* port;
-    if(argc == 2){
-        chdir(argv[1]);
+    if(argc == 3){
+        chdir(argv[2]);
         if (getcwd(home_path, sizeof(home_path)) == NULL) {
         printf("Error reading home directory\n");
         }
-        port = argv[0];
+        port = argv[1];
+        printf("Running on %s on port %s\n", home_path, port);
     }
     else{
 
