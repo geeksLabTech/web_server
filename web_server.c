@@ -52,6 +52,8 @@ SOCKET create_socket(const char* host, const char *port) {
     }
 
     printf("Binding socket to local address...\n");
+    int one = 1;
+    setsockopt(socket_listen, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
     if (bind(socket_listen,
                 bind_address->ai_addr, bind_address->ai_addrlen)) {
         fprintf(stderr, "bind() failed. (%d)\n", GETSOCKETERRNO());
