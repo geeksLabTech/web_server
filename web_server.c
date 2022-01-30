@@ -3,8 +3,10 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <string.h>
+#include <linux/limits.h>
 #include "linked_list.h"
 
+char home_path[PATH_MAX];
 
 const char *get_content_type(const char* path) {
     const char *last_dot = strrchr(path, '.');
@@ -189,53 +191,14 @@ void send_404(struct client_info *client) {
     drop_client(client);
 }
 
-char* html_template(int argc, char **argv){
-
-    char *base = (char*) "<!DOCTYPE html>\
-        <html lang='en'>\
-            <head>\
-                <meta charset='UTF-8'>\
-                <meta name='viewport'>\
-                <title>Mobuis Server</title>\
-            </head>\
-        <body>\
-            <table class='searchable sortable'>\
-            <tr>\
-                <th>Name</th>\
-                <th>Size</th>\
-            </tr>\
-            <tr>\
-                <td>Javier<\td>\
-                <td>22<\td>\
-            </tr>\
-            <tr>\
-                <td>Javier<\td>\
-                <td>22<\td>\
-            </tr>\
-            </table>\
-        <body>";
-
-    FILE *html = fopen("base.html", "w");
-
-    fputs( base, html);
-
-    return base;
+char* html_template(const char *path){
 
     DIR *folder;
     struct dirent *entry;
     struct Node *first_file = NULL;
     int port;
-    char *directory;
-    if (argc < 2){
-        port = 445;
-        directory = (char *)".";
-    }
-    else{
-        port = strtol(argv[1], NULL, 10);
-        directory = argv[2];
-    }
 
-    folder = opendir(directory);
+    folder = opendir(path);
     if(folder == NULL)
     {
         perror("Unable to read directory");
@@ -248,10 +211,10 @@ char* html_template(int argc, char **argv){
     char *full_path = NULL;
 
     while ((entry = readdir(folder)) != NULL) {
-    
-        struct Node *last = (struct Node*) malloc(sizeof(struct Node));
-        full_path = (char *)malloc(strlen(directory) + strlen(entry->d_name));
-        strcpy(full_path, directory);
+        // printf("%s\n", entry->d_name);
+        struct Node *last = (struct Node*)malloc(sizeof(struct Node));
+        full_path = (char *)malloc(strlen(path) + strlen(entry->d_name));
+        strcpy(full_path, path);
         strcat(full_path, entry->d_name);
         last->directory = full_path;
         last->name = entry->d_name;
@@ -263,15 +226,23 @@ char* html_template(int argc, char **argv){
             prev->next = last;
             prev = last;
         }
+        free(full_path);
+        // free(last);
     }
 
     closedir(folder);
     struct Node *root = head;
+    printf("%s\n", home_path);
+    FILE *fp = freopen(strcat(home_path,"/list.txt"), "w", stdout);
+    printf("%s\n", path);
+
     while(root != NULL) {
         printf("%s\n", root->name);
         root = root->next;
     }
+    fclose(fp);
 
+    return ((char *)"200 Success\n");
 }
 
 // attempts to transfer a file to a connected client
@@ -279,9 +250,20 @@ void serve_resource(struct client_info *client, const char *path) {
 
     printf("serve_resource %s %s\n", get_client_address(client), path);
 
-    char** a;
-    char*base = html_template(0, a);
-    if (strcmp(path, "/") == 0) path = "/base`.html";
+    if (strcmp(path,"/")){
+        printf("Changing directory to: %s\n", path);
+        chdir(path);
+    }
+
+    char cwd[PATH_MAX];
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+       printf("Current working dir: %s\n", cwd);
+    }
+
+    path = "/static/base.html";
+
+    char* status = html_template(cwd);
+
 
     if (strlen(path) > 100) {
         send_400(client);
@@ -340,6 +322,10 @@ void serve_resource(struct client_info *client, const char *path) {
 
 
 int main() {
+
+    if (getcwd(home_path, sizeof(home_path)) == NULL) {
+       printf("Error reading home directory\n");
+    }
 
     SOCKET server = create_socket(0, "8080");
 
