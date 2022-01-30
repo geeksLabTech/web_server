@@ -241,11 +241,12 @@ char* html_template(const char *path){
     closedir(folder);
     struct Node *root = head;
     printf("%s\n", home_path);
-    FILE *fp = freopen(strcat(home_path,"/list.txt"), "w", stdout);
-    printf("%s\n", path);
+    FILE *fp = freopen(strcat(home_path,"/index.html"), "w", stdout);
+    printf("<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport'><title>Mobuis Server</title><script src=\"https://www.kryogenix.org/code/browser/sorttable/sorttable.js\"></script><link rel=\"stylesheet\" type=\"text/css\" href=\"static/css/style.css\"></head><body><table class=\"searchable sortable\"><colgroup><col style=\"width: 227.56px;\"><col style=\"width: 53.56px;\"><col style=\"width: 145.56px;\"><col style=\"width: 139.56px;\"></colgroup><thead><tr style=\"background-color: #ebebeb;\"><th class=\"header\">Name</th><th class=\"header\">Size</th></tr></thead><tbody>\n");
+    // printf("%s\n", path);
 
     while(root != NULL) {
-        printf("%s %lu\n", root->name, root->size);
+        printf("<tr> <td> <a href=\"%s\">%s</a> </td> <td>%lu<td> </tr>\n", root->directory, root->name, root->size);
         root = root->next;
     }
     fclose(fp);
@@ -268,9 +269,8 @@ void serve_resource(struct client_info *client, const char *path) {
        printf("Current working dir: %s\n", cwd);
     }
 
-    path = "/static/base.html";
-
     char* status = html_template(cwd);
+    path = "index.html";
 
 
     if (strlen(path) > 100) {
