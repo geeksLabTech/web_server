@@ -221,7 +221,7 @@ char* html_template(const char *path){
     while ((entry = readdir(folder)) != NULL) {
 
         long size;
-        full_path = (char *)malloc(strlen(path) + strlen(entry->d_name));
+        full_path = (char *)malloc(strlen(path) + strlen(entry->d_name) + 1);
         strcpy(full_path, path);
         strcat(full_path, "/");
         strcat(full_path, entry->d_name);
