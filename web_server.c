@@ -215,7 +215,7 @@ char* html_template(const char *path){
     
     struct Node *root = head;
     printf("%s\n", path);
-    FILE *fp = freopen(strcat(home_path,"/public/index.html"), "w", stdout);
+    FILE *fp = freopen("index.html", "w", stdout);
     printf("<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport'><title>Mobuis Server</title><script src=\"https://www.kryogenix.org/code/browser/sorttable/sorttable.js\"></script><link rel=\"stylesheet\" type=\"text/css\" href=\"../static/css/style.css\"></head><body><table class=\"searchable sortable\"><colgroup><col style=\"width: 227.56px;\"><col style=\"width: 53.56px;\"><col style=\"width: 145.56px;\"><col style=\"width: 139.56px;\"></colgroup><thead><tr style=\"background-color: #ebebeb;\"><th class=\"header\">Name</th><th class=\"header\">Size</th></tr></thead><tbody>\n");
 
     while ((entry = readdir(folder)) != NULL) {
@@ -231,7 +231,7 @@ char* html_template(const char *path){
         else
             size =  -1;
         printf("<tr><td><a href=\"%s\">%s</a></td><td>%ld</td>\n", full_path, entry->d_name, size);
-        free(full_path);
+        // free(full_path);
     }
     
 
@@ -246,16 +246,29 @@ char* html_template(const char *path){
 // attempts to transfer a file to a connected client
 void serve_resource(struct client_info *client, const char *path) {
 
-    printf("serve_resource %s %s\n", get_client_address(client), path);
-
-    char cwd[PATH_MAX];
-    if (getcwd(cwd, sizeof(cwd)) != NULL) {
-       printf("Current working dir: %s\n", cwd);
+    if(strcmp("/", path) == 0){
+        path = home_path;
+    }
+    struct stat s;
+    if( stat(path,&s) == 0 )
+    {
+        if( s.st_mode & S_IFDIR )
+        {
+            
+            char* status = html_template(path);
+            path = "index.html";
+        }
+        else if( s.st_mode & S_IFREG )
+        {
+            // printf("Its a FILE!");
+            //it's a file
+        }
+        // else{
+        //     //its something else
+        // }
     }
 
-    char* status = html_template(path);
-    path = "/index.html";
-
+    printf("serve_resource %s %s\n", get_client_address(client), path);
 
     if (strlen(path) > 100) {
         send_400(client);
@@ -263,14 +276,14 @@ void serve_resource(struct client_info *client, const char *path) {
     }
 
     if (strstr(path, "..")) {
-        chdir("..");
+        send_404(client);
         return;
     }
 
     char full_path[128];
-    sprintf(full_path, "public%s", path);
+    sprintf(full_path, "%s", path);
 
-
+    printf("%s\n", full_path);
     FILE *fp = fopen(full_path, "rb");
 
     if (!fp) {
@@ -313,13 +326,26 @@ void serve_resource(struct client_info *client, const char *path) {
 }
 
 
-int main() {
+int main(int argc, char** argv) {
 
-    if (getcwd(home_path, sizeof(home_path)) == NULL) {
-       printf("Error reading home directory\n");
+    char* port;
+    if(argc == 2){
+        chdir(argv[1]);
+        if (getcwd(home_path, sizeof(home_path)) == NULL) {
+        printf("Error reading home directory\n");
+        }
+        port = argv[0];
+    }
+    else{
+
+        if (getcwd(home_path, sizeof(home_path)) == NULL) {
+        printf("Error reading home directory\n");
+        }
+
+        port = (char*)"8080";
     }
 
-    SOCKET server = create_socket(0, "8080");
+    SOCKET server = create_socket(0, port);
 
     while(1) {
 
