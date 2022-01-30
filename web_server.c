@@ -5,6 +5,7 @@
 #include <string.h>
 #include <linux/limits.h>
 #include "linked_list.h"
+#include <sys/stat.h>
 
 char home_path[PATH_MAX];
 
@@ -218,6 +219,11 @@ char* html_template(const char *path){
         full_path = (char *)malloc(strlen(path) + strlen(entry->d_name));
         strcpy(full_path, path);
         strcat(full_path, entry->d_name);
+        struct stat st;
+        if (stat(full_path, &st) == 0)
+            last->size = st.st_size;
+        else
+            last->size =  -1;
         last->directory = full_path;
         last->name = entry->d_name;
         last->next = NULL;
@@ -239,7 +245,7 @@ char* html_template(const char *path){
     printf("%s\n", path);
 
     while(root != NULL) {
-        printf("%s\n", root->name);
+        printf("%s %lu\n", root->name, root->size);
         root = root->next;
     }
     fclose(fp);
