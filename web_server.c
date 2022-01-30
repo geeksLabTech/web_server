@@ -1,6 +1,9 @@
 
-
 #include "web_server.h"
+#include <stdio.h>
+#include <dirent.h>
+#include <string.h>
+#include "linked_list.h"
 
 
 const char *get_content_type(const char* path) {
@@ -77,6 +80,9 @@ struct client_info {
 };
 
 static struct client_info *clients = 0;
+#include <stdio.h>
+#include <dirent.h>
+#include <string.h>
 
 // Takes a SOCKET variable and searches our linked list for the
 // corresponding client_info data structure
@@ -183,13 +189,99 @@ void send_404(struct client_info *client) {
     drop_client(client);
 }
 
+char* html_template(int argc, char **argv){
+
+    char *base = (char*) "<!DOCTYPE html>\
+        <html lang='en'>\
+            <head>\
+                <meta charset='UTF-8'>\
+                <meta name='viewport'>\
+                <title>Mobuis Server</title>\
+            </head>\
+        <body>\
+            <table class='searchable sortable'>\
+            <tr>\
+                <th>Name</th>\
+                <th>Size</th>\
+            </tr>\
+            <tr>\
+                <td>Javier<\td>\
+                <td>22<\td>\
+            </tr>\
+            <tr>\
+                <td>Javier<\td>\
+                <td>22<\td>\
+            </tr>\
+            </table>\
+        <body>";
+
+    FILE *html = fopen("base.html", "w");
+
+    fputs( base, html);
+
+    return base;
+
+    DIR *folder;
+    struct dirent *entry;
+    struct Node *first_file = NULL;
+    int port;
+    char *directory;
+    if (argc < 2){
+        port = 445;
+        directory = (char *)".";
+    }
+    else{
+        port = strtol(argv[1], NULL, 10);
+        directory = argv[2];
+    }
+
+    folder = opendir(directory);
+    if(folder == NULL)
+    {
+        perror("Unable to read directory");
+        return((char*)"ERROR 400\n");
+    }
+    int files_count = 0;
+    
+    struct Node *head = NULL;
+    struct Node *prev = head;
+    char *full_path = NULL;
+
+    while ((entry = readdir(folder)) != NULL) {
+    
+        struct Node *last = (struct Node*) malloc(sizeof(struct Node));
+        full_path = (char *)malloc(strlen(directory) + strlen(entry->d_name));
+        strcpy(full_path, directory);
+        strcat(full_path, entry->d_name);
+        last->directory = full_path;
+        last->name = entry->d_name;
+        last->next = NULL;
+        if(head == NULL) {
+            head = last;
+            prev = last;
+        } else {
+            prev->next = last;
+            prev = last;
+        }
+    }
+
+    closedir(folder);
+    struct Node *root = head;
+    while(root != NULL) {
+        printf("%s\n", root->name);
+        root = root->next;
+    }
+
+}
 
 // attempts to transfer a file to a connected client
 void serve_resource(struct client_info *client, const char *path) {
 
     printf("serve_resource %s %s\n", get_client_address(client), path);
 
-    if (strcmp(path, "/") == 0) path = "/index.html";
+    char** a;
+    char*base = html_template(0, a);
+    if (strcmp(path, "/") == 0) path = "/base`.html";
 
     if (strlen(path) > 100) {
         send_400(client);
@@ -197,7 +289,7 @@ void serve_resource(struct client_info *client, const char *path) {
     }
 
     if (strstr(path, "..")) {
-        send_404(client);
+        chdir("..");
         return;
     }
 
