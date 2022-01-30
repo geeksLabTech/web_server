@@ -212,12 +212,18 @@ char* html_template(const char *path){
     struct Node *head = NULL;
     struct Node *prev = head;
     char *full_path = NULL;
+    
+    struct Node *root = head;
+    printf("%s\n", home_path);
+    FILE *fp = freopen(strcat(home_path,"/index.html"), "w", stdout);
+    printf("<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport'><title>Mobuis Server</title><script src=\"https://www.kryogenix.org/code/browser/sorttable/sorttable.js\"></script><link rel=\"stylesheet\" type=\"text/css\" href=\"static/css/style.css\"></head><body><table class=\"searchable sortable\"><colgroup><col style=\"width: 227.56px;\"><col style=\"width: 53.56px;\"><col style=\"width: 145.56px;\"><col style=\"width: 139.56px;\"></colgroup><thead><tr style=\"background-color: #ebebeb;\"><th class=\"header\">Name</th><th class=\"header\">Size</th></tr></thead><tbody>\n");
 
     while ((entry = readdir(folder)) != NULL) {
         // printf("%s\n", entry->d_name);
         struct Node *last = (struct Node*)malloc(sizeof(struct Node));
         full_path = (char *)malloc(strlen(path) + strlen(entry->d_name));
         strcpy(full_path, path);
+        strcat(full_path, "/");
         strcat(full_path, entry->d_name);
         struct stat st;
         if (stat(full_path, &st) == 0)
@@ -226,6 +232,7 @@ char* html_template(const char *path){
             last->size =  -1;
         last->directory = full_path;
         last->name = entry->d_name;
+        printf("<tr><td><a href=\"%s\">%s</a></td><td>%ld</td>\n", last->directory, last->name, last->size);
         last->next = NULL;
         if(head == NULL) {
             head = last;
@@ -239,16 +246,8 @@ char* html_template(const char *path){
     }
 
     closedir(folder);
-    struct Node *root = head;
-    printf("%s\n", home_path);
-    FILE *fp = freopen(strcat(home_path,"/index.html"), "w", stdout);
-    printf("<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport'><title>Mobuis Server</title><script src=\"https://www.kryogenix.org/code/browser/sorttable/sorttable.js\"></script><link rel=\"stylesheet\" type=\"text/css\" href=\"static/css/style.css\"></head><body><table class=\"searchable sortable\"><colgroup><col style=\"width: 227.56px;\"><col style=\"width: 53.56px;\"><col style=\"width: 145.56px;\"><col style=\"width: 139.56px;\"></colgroup><thead><tr style=\"background-color: #ebebeb;\"><th class=\"header\">Name</th><th class=\"header\">Size</th></tr></thead><tbody>\n");
     // printf("%s\n", path);
-
-    while(root != NULL) {
-        printf("<tr> <td> <a href=\"%s\">%s</a> </td> <td>%lu<td> </tr>\n", root->directory, root->name, root->size);
-        root = root->next;
-    }
+    printf("</tbody></table></body>\n");
     fclose(fp);
 
     return ((char *)"200 Success\n");
