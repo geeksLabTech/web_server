@@ -231,10 +231,11 @@ char* html_template(const char *path){
         else
             size =  -1;
         printf("<tr><td><a href=\"%s\">%s</a></td><td>%ld</td>\n", full_path, entry->d_name, size);
+        if(full_path != NULL)
+            free(full_path);
     }
     
 
-    free(full_path);
     closedir(folder);
     // printf("%s\n", path);
     printf("</tbody></table></body>\n");
