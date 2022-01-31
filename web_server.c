@@ -221,7 +221,8 @@ char* html_template(const char *path){
     while ((entry = readdir(folder)) != NULL) {
 
         long size;
-        full_path = (char *)malloc(strlen(path) + strlen(entry->d_name) + 1);
+        char full_path[strlen(path)+strlen(entry->d_name)+1];
+        // full_path = (char *)malloc(strlen(path) + strlen(entry->d_name) + 1);
         strcpy(full_path, path);
         strcat(full_path, "/");
         strcat(full_path, entry->d_name);
@@ -231,8 +232,8 @@ char* html_template(const char *path){
         else
             size =  -1;
         printf("<tr><td><a href=\"%s\">%s</a></td><td>%ld</td>\n", full_path, entry->d_name, size);
-        if(full_path != NULL)
-            free(full_path);
+        // if(full_path != NULL)
+        // free(full_path);
     }
     
 
