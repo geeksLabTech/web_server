@@ -36,4 +36,4 @@ fd_set wait_on_clients(SOCKET server);
 void send_400(struct client_info *client);
 void send_404(struct client_info *client);
 char* html_template(const char *path);
-void serve_resource(struct client_info *client, const char *path);
+void serve_resource(struct client_info *client, char *path);
