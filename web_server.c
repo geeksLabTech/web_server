@@ -225,19 +225,22 @@ char* html_template(const char *path){
 }
 
 // attempts to transfer a file to a connected client
-void serve_resource(struct client_info *client, const char *path) {
+void serve_resource(struct client_info *client, char *path) {
+
+    if(strlen(path) > 1 && path[strlen(path)-1] == '/')
+        path[strlen(path)-1] = '\0';
 
     if(strcmp("/", path) == 0){
         path = home_path;
     }
-    struct stat s;
+    
+    struct stat s; 
     if( stat(path,&s) == 0 )
     {
         if( s.st_mode & S_IFDIR )
         {
-
             char* status = html_template(path);
-            path = "index.html";
+            path = (char *)"index.html";
         }
     }
 

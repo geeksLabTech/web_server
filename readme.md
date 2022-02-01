@@ -2,7 +2,7 @@
 
 ## Compilar
 
-`gcc web_server.c -o server`
+`clang main.c web_server.c -o server`
 
 ## Ejecutar
 - `./server` Lanza el Servidor en el path actual, en el puerto 8080
