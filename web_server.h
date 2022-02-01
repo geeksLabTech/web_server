@@ -8,14 +8,20 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <errno.h>
+#include <dirent.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "client_info.h"
+#include "linked_list.h"
+
 
 
 #define ISVALIDSOCKET(s) ((s) >= 0)
 #define CLOSESOCKET(s) close(s)
-#define SOCKET int
+
 #define GETSOCKETERRNO() (errno)
 
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+extern char home_path[PATH_MAX];
+extern struct client_info *clients;
