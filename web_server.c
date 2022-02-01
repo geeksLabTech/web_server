@@ -67,7 +67,7 @@ SOCKET create_socket(const char* host, const char *port) {
 }
 
 
-static struct client_info *clients = 0;
+struct client_info *clients = 0;
 
 // Takes a SOCKET variable and searches our linked list for the
 // corresponding client_info data structure
